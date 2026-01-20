@@ -1,38 +1,19 @@
-"""
-COMPILER - Interactive Mode
----------------------------
-Enter your code and see:
-1. The LL(1) parsing table
-2. Step-by-step parsing
-3. Generated code (if valid) or error messages (if invalid)
-
-Run: python src/main.py
-"""
-
 from lexer import Lexer
-from parser import Parser
-from codegen import CodeGenerator
-from table_parser import validate_and_parse, build_parsing_table, print_parsing_table
+from table_parser import build_parsing_table, print_parsing_table
 
 
 def compile_with_validation(source: str) -> bool:
-    """
-    Compile source code with full validation.
-    Shows parsing table and validates before generating code.
-    """
     print("\n" + "=" * 80)
     print("COMPILER - Theory of Computation")
     print("=" * 80)
     print(f"\nInput: {source}")
     
-    # Step 1: Show parsing table
     print("\n" + "=" * 80)
     print("STEP 1: LL(1) PARSING TABLE")
     print("=" * 80)
     table = build_parsing_table()
     print_parsing_table(table)
     
-    # Step 2: Lexical Analysis (silent - just tokenize)
     try:
         lexer = Lexer(source)
         tokens = lexer.tokenize()
@@ -43,7 +24,6 @@ def compile_with_validation(source: str) -> bool:
         print("=" * 80)
         return False
     
-    # Step 2: Syntax Analysis using table-driven parser
     print("\n" + "=" * 80)
     print("STEP 2: SYNTAX ANALYSIS (Table-Driven Parsing)")
     print("=" * 80)
@@ -62,52 +42,37 @@ def compile_with_validation(source: str) -> bool:
         print("Please check your syntax and try again.")
         return False
     
-    # Step 3: Code Generation (only if syntax is valid)
     print("\n" + "=" * 80)
-    print("STEP 3: CODE GENERATION")
+    print("✓ COMPILATION SUCCESSFUL!")
     print("=" * 80)
-    
-    # Re-tokenize for the recursive descent parser
-    lexer = Lexer(source)
-    tokens = lexer.tokenize()
-    parser = Parser(tokens)
-    ast = parser.parse()
-    
-    codegen = CodeGenerator()
-    output = codegen.generate(ast)
-    
-    print("\n✓ COMPILATION SUCCESSFUL!")
-    print("\nGenerated Python Code:")
-    print("-" * 40)
-    print(output)
-    print("-" * 40)
+    print("\nThe input is valid and conforms to the grammar.")
     
     return True
 
 
 def interactive_mode():
-    """Run compiler in interactive mode."""
     print("\n" + "=" * 80)
     print("INTERACTIVE COMPILER")
     print("Theory of Computation - Grammar-Based Compiler")
     print("=" * 80)
     
     print("""
-Grammar Rules (else can only follow if):
-  <Program>       → <StatementList>
-  <StatementList> → <Statement> <StatementList'>
-  <StatementList'>→ <Statement> <StatementList'> | ε
-  <Statement>     → <IfStatement> <OptionalElse>
-  <IfStatement>   → if <Condition> then <Assignment>
-  <OptionalElse>  → else <Assignment> | ε
-  <Condition>     → IDENTIFIER >= NUMBER
-  <Assignment>    → IDENTIFIER is <Value>
-  <Value>         → LETTER
+Minimal Grammar:
+  S → if C then R
+  C → IDENTIFIER >= NUMBER | IDENTIFIER <= NUMBER
+  R → pass | fail
 
-Example valid inputs:
-  • if score >= 90 then grade is A
-  • if score >= 90 then grade is A else grade is B
-  • if x >= 50 then result is P else result is F
+Where: S=Statement, C=Condition, R=Result
+
+Valid inputs (ONLY these patterns are accepted):
+  • if score >= 90 then pass
+  • if score <= 90 then fail
+
+Restrictions:
+  - Only identifier: score
+  - Only number: 90
+  - Only operators: >=, <=
+  - Only results: pass, fail
 
 Type 'quit' or 'exit' to stop.
 Type 'example' to see a demo.
@@ -130,7 +95,7 @@ Type 'grammar' to run grammar analysis.
             break
         
         if source.lower() == 'example':
-            source = "if score >= 90 then grade is A else grade is B"
+            source = "if score >= 90 then pass"
             print(f"Running example: {source}")
         
         if source.lower() == 'grammar':
@@ -142,15 +107,12 @@ Type 'grammar' to run grammar analysis.
 
 
 def main():
-    """Main entry point."""
     import sys
     
     if len(sys.argv) > 1:
-        # Command line argument provided
         source = " ".join(sys.argv[1:])
         compile_with_validation(source)
     else:
-        # Interactive mode
         interactive_mode()
 
 
